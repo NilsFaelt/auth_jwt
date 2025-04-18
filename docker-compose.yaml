@@ -1,0 +1,28 @@
+services:
+  postgres_hashes:
+    image: postgres:15
+    container_name: hashes_sql
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: hashes
+    volumes:
+      - postgres_hashes_data:/var/lib/postgresql/data
+
+  postgres_tokens:
+    image: postgres:15
+    container_name: tokens_sql
+    ports:
+      - 5433:5432
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: tokens
+    volumes:
+      - postgres_tokens_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_hashes_data:
+  postgres_tokens_data:
