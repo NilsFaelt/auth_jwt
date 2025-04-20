@@ -3,7 +3,7 @@ import { postgresClientHashes } from "./client";
 const createHashesTable = async () => {
   try {
     await postgresClientHashes.query(
-      "CREATE TABLE IF NOT EXISTS HASHES (username TEXT PRIMARY KEY UNIQUE, password TEXT NOT NULL,created_at TIMESTAMP DEFAULT now())"
+      "CREATE TABLE IF NOT EXISTS HASHES (username TEXT PRIMARY KEY UNIQUE, password TEXT NOT NULL,created_at TIMESTAMP DEFAULT now(), id TEXT UNIQUE NOT NULL)"
     );
     console.log("table hashes created");
   } catch (error) {

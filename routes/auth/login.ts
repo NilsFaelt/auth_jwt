@@ -1,6 +1,6 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
-import { UserSchema } from "./model/user";
+import { PartialUserSchema } from "./model/user";
 import { HTTPException } from "hono/http-exception";
 import { getUserPG } from "./utils/getUser";
 import { generateAccessJWT } from "./utils/generateAccessJWT";
@@ -11,8 +11,9 @@ const app = new Hono();
 
 app.post(
   "/login",
-  zValidator("json", UserSchema, (data) => {
+  zValidator("json", PartialUserSchema, (data) => {
     if (!data.success) {
+      console.log(data.data);
       throw new HTTPException(401, { message: "Unauthorized" });
     }
   }),
@@ -30,7 +31,7 @@ app.post(
       throw new HTTPException(401, { message: "Unauthorized" });
     }
 
-    const accessToken = await generateAccessJWT(username);
+    const accessToken = await generateAccessJWT({ username, id: user.id });
     if (accessToken.success === "fail" || !accessToken.token) {
       return c.json({ message: "error creating token" }, 500);
     }

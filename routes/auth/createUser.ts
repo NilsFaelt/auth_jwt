@@ -1,16 +1,17 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
-import { UserSchema } from "./model/user";
+import { PartialUserSchema } from "./model/user";
 import { HTTPException } from "hono/http-exception";
 import { hashMe } from "../../utils/hashMe";
 import { createUserPG } from "./utils/createUserPG";
 import { setSignedCookie } from "hono/cookie";
 import { generateAccessJWT } from "./utils/generateAccessJWT";
+
 const app = new Hono();
 
 app.post(
   "/create",
-  zValidator("json", UserSchema, (data) => {
+  zValidator("json", PartialUserSchema, (data) => {
     if (!data.success) {
       throw new HTTPException(400, { message: "Wrong values in body" });
     }
@@ -19,15 +20,16 @@ app.post(
     const body = c.req.valid("json");
     const username = body.username;
     const hashedPassword = await hashMe(body.password, 10);
+
     const res = await createUserPG({
       username,
       password: hashedPassword,
     });
-    if (res.status === "fail") {
+    if (res.status !== "ok") {
       return c.json({ message: "error creating user" }, 500);
     }
 
-    const accessToken = await generateAccessJWT(username);
+    const accessToken = await generateAccessJWT({ username, id: res.user.id });
     if (accessToken.success === "fail" || !accessToken.token) {
       return c.json({ message: "error creating token" }, 500);
     }
