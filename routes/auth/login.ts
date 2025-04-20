@@ -3,6 +3,8 @@ import { Hono } from "hono";
 import { UserSchema } from "./model/user";
 import { HTTPException } from "hono/http-exception";
 import { getUserPG } from "./utils/getUser";
+import { generateAccessJWT } from "./utils/generateAccessJWT";
+import { setCookie } from "hono/cookie";
 import bcrypt from "bcrypt";
 
 const app = new Hono();
@@ -27,6 +29,20 @@ app.post(
     if (!isValid) {
       throw new HTTPException(401, { message: "Unauthorized" });
     }
+
+    const accessToken = await generateAccessJWT(username);
+    if (accessToken.success === "fail" || !accessToken.token) {
+      return c.json({ message: "error creating token" }, 500);
+    }
+    //MAKE SIGNED COOKIE AFTER DEV
+    setCookie(c, "token", accessToken.token, {
+      path: "/",
+      secure: true,
+      domain: "localhost",
+      httpOnly: true,
+      maxAge: 3600,
+      sameSite: "lax",
+    });
 
     return c.json({ status: "ok", user });
   }
