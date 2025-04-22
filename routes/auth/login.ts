@@ -6,6 +6,7 @@ import { getUserPG } from "./utils/getUser";
 import { generateAccessJWT } from "./utils/generateAccessJWT";
 import { setCookie } from "hono/cookie";
 import bcrypt from "bcrypt";
+import { generateRefreshJWT } from "./utils/generateRefreshJWT";
 
 const app = new Hono();
 
@@ -30,13 +31,26 @@ app.post(
     if (!isValid) {
       throw new HTTPException(401, { message: "Unauthorized" });
     }
-
+    console.log("user", user.id);
     const accessToken = await generateAccessJWT({ username, id: user.id });
-    if (accessToken.success === "fail" || !accessToken.token) {
+    const refreshToken = await generateRefreshJWT({ id: user.id });
+
+    if (accessToken.success !== "ok" || !accessToken.token) {
       return c.json({ message: "error creating token" }, 500);
     }
-    //MAKE SIGNED COOKIE AFTER DEV
+    if (refreshToken.success !== "ok" || !accessToken.token) {
+      return c.json({ message: "error creating token" }, 500);
+    }
+
     setCookie(c, "token", accessToken.token, {
+      path: "/",
+      secure: true,
+      domain: "localhost",
+      httpOnly: true,
+      maxAge: 3600,
+      sameSite: "lax",
+    });
+    setCookie(c, "refresh_token", refreshToken.token, {
       path: "/",
       secure: true,
       domain: "localhost",

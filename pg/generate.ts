@@ -1,4 +1,4 @@
-import { postgresClientHashes } from "./client";
+import { postgresClientHashes, postgresClientTokens } from "./client";
 
 const createHashesTable = async () => {
   try {
@@ -10,5 +10,20 @@ const createHashesTable = async () => {
     console.log(error);
   }
 };
+const createTokenTable = async () => {
+  try {
+    await postgresClientTokens.query(
+      "CREATE TABLE IF NOT EXISTS TOKENS (sub TEXT PRIMARY KEY NOT NULL, exp BIGINT NOT NULL, jti TEXT UNIQUE NOT NULL, revoked BOOLEAN DEFAULT false)"
+    );
+    console.log("table tokens created");
+  } catch (error) {
+    console.log(error);
+  }
+};
 
-await createHashesTable();
+await createTokenTable().catch((err) => {
+  console.log(err);
+});
+await createHashesTable().catch((err) => {
+  console.log(err);
+});

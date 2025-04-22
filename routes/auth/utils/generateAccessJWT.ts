@@ -1,4 +1,3 @@
-import type { User } from "../model/user";
 import { sign } from "hono/jwt";
 
 export const generateAccessJWT = async ({
@@ -15,7 +14,7 @@ export const generateAccessJWT = async ({
       sub: id,
     };
 
-    const signedJWT = await sign(payload, process.env.ACCESSTOKEN_KEY!);
+    const signedJWT = await sign(payload, process.env.ACCESS_TOKEN_KEY!);
     return { success: "ok", token: signedJWT };
   } catch (error) {
     console.log(error);
