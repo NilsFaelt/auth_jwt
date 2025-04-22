@@ -2,11 +2,12 @@ import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { PartialUserSchema } from "./model/user";
 import { HTTPException } from "hono/http-exception";
-import { getUserPG } from "./utils/getUser";
+import { getUserPG } from "./utils/getUserPG";
 import { generateAccessJWT } from "./utils/generateAccessJWT";
 import { setCookie } from "hono/cookie";
-import bcrypt from "bcrypt";
 import { generateRefreshJWT } from "./utils/generateRefreshJWT";
+import bcrypt from "bcrypt";
+import { setTokensCookie } from "./utils/setTokensCookie";
 
 const app = new Hono();
 
@@ -31,7 +32,7 @@ app.post(
     if (!isValid) {
       throw new HTTPException(401, { message: "Unauthorized" });
     }
-    console.log("user", user.id);
+
     const accessToken = await generateAccessJWT({ username, id: user.id });
     const refreshToken = await generateRefreshJWT({ id: user.id });
 
@@ -41,22 +42,10 @@ app.post(
     if (refreshToken.success !== "ok" || !accessToken.token) {
       return c.json({ message: "error creating token" }, 500);
     }
-
-    setCookie(c, "token", accessToken.token, {
-      path: "/",
-      secure: true,
-      domain: "localhost",
-      httpOnly: true,
-      maxAge: 3600,
-      sameSite: "lax",
-    });
-    setCookie(c, "refresh_token", refreshToken.token, {
-      path: "/",
-      secure: true,
-      domain: "localhost",
-      httpOnly: true,
-      maxAge: 3600,
-      sameSite: "lax",
+    await setTokensCookie({
+      accessToken: accessToken.token,
+      refreshToken: refreshToken.token,
+      c,
     });
 
     return c.json({ status: "ok", user });

@@ -13,7 +13,7 @@ const createHashesTable = async () => {
 const createTokenTable = async () => {
   try {
     await postgresClientTokens.query(
-      "CREATE TABLE IF NOT EXISTS TOKENS (sub TEXT PRIMARY KEY NOT NULL, exp BIGINT NOT NULL, jti TEXT UNIQUE NOT NULL, revoked BOOLEAN DEFAULT false)"
+      "CREATE TABLE IF NOT EXISTS TOKENS (sub TEXT NOT NULL, exp BIGINT NOT NULL, jti TEXT UNIQUE NOT NULL, revoked BOOLEAN DEFAULT false)"
     );
     console.log("table tokens created");
   } catch (error) {

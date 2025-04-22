@@ -4,8 +4,9 @@ import { PartialUserSchema } from "./model/user";
 import { HTTPException } from "hono/http-exception";
 import { hashMe } from "../../utils/hashMe";
 import { createUserPG } from "./utils/createUserPG";
-import { setSignedCookie } from "hono/cookie";
 import { generateAccessJWT } from "./utils/generateAccessJWT";
+import { generateRefreshJWT } from "./utils/generateRefreshJWT";
+import { setTokensCookie } from "./utils/setTokensCookie";
 
 const app = new Hono();
 
@@ -30,16 +31,14 @@ app.post(
     }
 
     const accessToken = await generateAccessJWT({ username, id: res.user.id });
+    const refreshToken = await generateRefreshJWT({ id: res.user.id });
     if (accessToken.success === "fail" || !accessToken.token) {
       return c.json({ message: "error creating token" }, 500);
     }
-    setSignedCookie(c, "token", accessToken.token, process.env.COOKIE_SECRET!, {
-      path: "/",
-      secure: true,
-      domain: "localhost",
-      httpOnly: true,
-      maxAge: 3600,
-      sameSite: "lax",
+    await setTokensCookie({
+      accessToken: accessToken.token,
+      refreshToken: refreshToken.token,
+      c,
     });
     return c.json(res);
   }

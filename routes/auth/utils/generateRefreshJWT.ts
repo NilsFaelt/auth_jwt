@@ -1,6 +1,7 @@
 import { sign } from "hono/jwt";
 import { v4 as uuidv4 } from "uuid";
 import { storeRefreshTokenPG } from "./storeRefreshTokenPG";
+import { revokeRefreshTokenPG } from "./revokeRefreshTokenPG";
 
 export const generateRefreshJWT = async ({
   id,
@@ -17,6 +18,7 @@ export const generateRefreshJWT = async ({
       jti,
     };
     const token = await sign(payload, process.env.REFRESH_TOKEN_KEY!);
+    await revokeRefreshTokenPG({ id });
     await storeRefreshTokenPG({ id, exp, jti });
     return { success: "ok", token: token };
   } catch (error) {
