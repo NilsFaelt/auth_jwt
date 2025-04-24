@@ -18,3 +18,22 @@ export const getUserPG = async ({
     throw new Error("Could not get user");
   }
 };
+
+export const getUserPGVulnerable = async ({
+  username,
+}: {
+  username: string;
+}): Promise<any> => {
+  try {
+    // ' OR 1=1 --
+    // '; DROP TABLE HASHES; --
+    const response = await postgresClientHashes.query(
+      `SELECT * FROM HASHES WHERE username = '${username}' `
+    );
+    console.log(response.rows[0]);
+    return response.rows;
+  } catch (error) {
+    console.log(error);
+    throw new Error("Could not get user");
+  }
+};

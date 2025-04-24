@@ -10,7 +10,7 @@ export const generateAccessJWT = async ({
   try {
     const payload = {
       name: username,
-      exp: Math.floor(Date.now() / 1000) + 60 * 60,
+      exp: Math.floor(Date.now() / 1000) + 10,
       sub: id,
     };
 
